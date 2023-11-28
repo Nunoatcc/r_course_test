@@ -1,0 +1,130 @@
+---
+title: "Gapminder analysis"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(flexdashboard)
+library(shiny)
+library(gapminder)
+```
+
+Sidebar {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+# Widget for the user to control the year
+sliderInput(inputId = "year_input", 
+            label = "Choose the year",
+            min = min(gapminder$year),
+            max = max(gapminder$year),
+            value = min(gapminder$year), #Starting value
+            sep = "", # Do not show thousands separator
+            step = 5,
+            animate = animationOptions(interval = 2000, 
+                                       loop = T,
+                                       playButton = icon('play', "fa-1x"),
+                                       pauseButton = icon('pause', "fa-1x"))) #Optionally, add an animation to the plot
+```
+
+```{r}
+#Creating some reactive objects
+
+#Reactive gapminder dataframe, that filters for user input
+gapminder_filtered <- reactive(gapminder %>% filter(year == input$year_input))
+
+#4 reactive objects with min and max LE values and respective countries
+min_le <- 
+  reactive(gapminder_filtered() %>% 
+             filter(lifeExp == min(lifeExp)) %>% 
+             pluck("lifeExp"))
+
+min_le_country <- 
+  reactive(gapminder_filtered() %>%
+             filter(lifeExp == min(lifeExp)) %>% 
+             pluck("country"))
+
+max_le <- 
+  reactive(gapminder_filtered() %>% 
+             filter(lifeExp == max(lifeExp)) %>% 
+             pluck("lifeExp"))
+
+max_le_country <- 
+  reactive(gapminder_filtered() %>% 
+             filter(lifeExp == max(lifeExp)) %>% 
+             pluck("country"))
+
+```
+
+
+Column 
+-----------------------------------------------------------------------
+
+### Minimum Life Expectancy {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = min_le(),
+    icon = "fa-thumbs-down",
+    color = "danger")
+})
+```
+
+### Minimum Life Expectancy - Country {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = min_le_country(),
+    icon = "fa-thumbs-down",
+    color = "danger")
+})
+```
+
+### Maximum Life Expectancy {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = max_le(),
+    icon = "fa-thumbs-up",
+    color = "success")
+})
+```
+
+### Maximum Life Expectancy - Country {.value-box}
+
+```{r}
+renderValueBox({
+  valueBox(
+    value = max_le_country(),
+    icon = "fa-thumbs-up",
+    color = "success")
+})
+
+```
+
+Row 
+-----------------------------------------------------------------------
+
+```{r}
+#Create the reactive output based on user input and prepare for display
+output$gapminder_plot <- renderPlot({
+  gapminder %>% 
+    dplyr::filter(year == input$year_input) %>% 
+    ggplot(aes(x = gdpPercap, y = lifeExp)) +
+    geom_point(aes(color = continent, size = pop), alpha = 0.4)
+})
+```
+
+```{r}
+#Actually display the output
+plotOutput("gapminder_plot")
+```
+
+

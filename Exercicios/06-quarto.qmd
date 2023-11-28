@@ -1,0 +1,68 @@
+---
+title: "Part 06 - Reporting with Quarto"
+subtitle: "Introduction to R for Health Data Science: Hands-on training"
+author: "Carlos Matos"
+format: html
+number-sections: false
+toc: true
+bibliography: references.bib
+csl: "https://raw.githubusercontent.com/citation-style-language/styles/master/american-medical-association.csl"
+---
+
+# Exploring the gapminder dataset
+
+This document is part of the Introduction to R for Health Data Science: Hands-on training.
+
+We will take a closer look at Portugal. \
+In @sec-portugal-over-time we will look at how life expectancy changed in Portugal over time.\
+In @sec-portugal-reg we will make a regression of lifeExp over gdpPercap in Portugal and report the results.
+
+First, let's load the necessary packages: [@tidyverse; @gapminder; @report; @Gizaw2019]
+
+```{r}
+#| echo: fenced
+#| message: false
+#| warning: false
+library(tidyverse)
+library(gapminder)
+library(report)
+```
+
+Then, let's take a look at the dataset.
+
+```{r}
+gapminder %>% glimpse()
+```
+
+We see a tibble with `r nrow(gapminder)` rows and `r length(gapminder)` columns.
+
+## Portugal analysis
+
+### Over time {#sec-portugal-over-time}
+
+```{r}
+gapminder %>% 
+  filter(country == "Portugal") %>% 
+  ggplot(aes(x = year, y = lifeExp)) +
+  geom_line(color = "darkred") +
+  geom_point(color = "darkgreen")
+```
+
+We see that that life expectancy **increased continuously.**
+
+### Regression modelling {#sec-portugal-reg}
+
+```{r}
+gapminder_pt <- gapminder %>% 
+  filter(country == "Portugal")
+
+lm(lifeExp ~ gdpPercap, data = gapminder_pt) %>% 
+  report()
+```
+
+# References
+
+::: {#refs}
+:::
+
+# ANNEX

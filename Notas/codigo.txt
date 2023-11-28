@@ -1,0 +1,3 @@
+xx <- rio::import("Book1.xlsx") %>% 
+  mutate(across(everything(), ~if_else(.=="NA",NA,.)))
+rio::convert("Book1.xlsx","Book1.sav")
